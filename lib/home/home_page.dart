@@ -33,16 +33,25 @@ class _HomePageState extends State<HomePage> {
           builder: (context, state) {
             if (state is ShowUsersState) {
               return RefreshIndicator(
-                child: ListView.builder(
+                child: ListView.separated(
                   itemCount: state.usersList.length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      Divider(),
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
                       title: Text(state.usersList[index].name),
+                      subtitle: Text(
+                          'Company: ${state.usersList[index].company.name}'
+                          '\nStreet: ${state.usersList[index].address.street}'
+                          '\nPhone: ${state.usersList[index].phone}'),
+                      isThreeLine: true,
                     );
                   },
                 ),
                 onRefresh: () async {
                   BlocProvider.of<HomeBloc>(context).add(GetAllUsersEvent());
+                  // BlocProvider.of<HomeBloc>(context)
+                  //     .add(FilterUsersEvent(filterEven: true));
                 },
               );
             } else if (state is LoadingState) {
