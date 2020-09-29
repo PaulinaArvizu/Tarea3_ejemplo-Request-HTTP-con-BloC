@@ -12,10 +12,9 @@ part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final _link = "https://jsonplaceholder.typicode.com/users";
-  final bool filterEven;
   List<User> _userList;
 
-  HomeBloc(this.filterEven) : super(HomeInitial());
+  HomeBloc() : super(HomeInitial());
 
   @override
   Stream<HomeState> mapEventToState(
@@ -33,7 +32,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       yield LoadingState();
 
       //hacer filtrado
-      if (filterEven)
+      if (event.filterEven)
         await _getEvenUsers();
       else
         await _getOddUsers();
