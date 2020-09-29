@@ -12,6 +12,7 @@ part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final _link = "https://jsonplaceholder.typicode.com/users";
+  final bool filterEven = false;
   List<User> _userList;
 
   HomeBloc() : super(HomeInitial());
@@ -28,7 +29,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       else
         yield ErrorState(error: "No hay elementos por mostrar");
     } else if (event is FilterUsersEvent) {
-      // TODO hacer despues
+      // DONE hacer despues
+      yield LoadingState();
+
+      //hacer filtrado
+      if (filterEven) {
+        await _getEvenUsers();
+      } else {
+        await _getOddUsers();
+      }
+
+      if (_userList.length > 0)
+        yield ShowUsersState(usersList: _userList);
+      else
+        yield ErrorState(error: "No hay elementos por mostrar");
     }
   }
 
@@ -39,6 +53,38 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         _userList = List();
         List<dynamic> data = jsonDecode(response.body);
         _userList = data.map((element) => User.fromJson(element)).toList();
+      }
+    } catch (error) {
+      print(error.toString());
+      _userList = List();
+    }
+  }
+
+  Future _getEvenUsers() async {
+    try {
+      Response response = await get(_link);
+      if (response.statusCode == 200) {
+        _userList = List();
+        List<dynamic> data = jsonDecode(response.body);
+        _userList = data.map((element) => User.fromJson(element)).toList();
+        //filtrar pares
+        _userList = _userList.where((element) => element.id % 2 == 0).toList();
+      }
+    } catch (error) {
+      print(error.toString());
+      _userList = List();
+    }
+  }
+
+  Future _getOddUsers() async {
+    try {
+      Response response = await get(_link);
+      if (response.statusCode == 200) {
+        _userList = List();
+        List<dynamic> data = jsonDecode(response.body);
+        _userList = data.map((element) => User.fromJson(element)).toList();
+        //filtrar impares
+        _userList = _userList.where((element) => element.id % 2 != 0).toList();
       }
     } catch (error) {
       print(error.toString());
