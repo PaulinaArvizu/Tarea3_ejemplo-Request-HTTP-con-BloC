@@ -11,14 +11,60 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
+  HomeBloc _homeBloc = HomeBloc();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Center(
+                child: Text(
+                  'Filtrar usuarios',
+                  style: TextStyle(color: Colors.white, fontSize: 25),
+                ),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.all_inclusive),
+              title: Text('Todos'),
+              onTap: () {
+                _homeBloc..add(GetAllUsersEvent());
+                _scaffoldKey.currentState.openEndDrawer();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Pares'),
+              onTap: () {
+                _homeBloc..add(FilterUsersEvent(filterEven: true));
+                _scaffoldKey.currentState.openEndDrawer();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Impares'),
+              onTap: () {
+                _homeBloc..add(FilterUsersEvent(filterEven: false));
+                _scaffoldKey.currentState.openEndDrawer();
+              },
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: Text("Users list"),
       ),
       body: BlocProvider(
-        create: (context) => HomeBloc()..add(GetAllUsersEvent()),
+        create: (context) => _homeBloc..add(GetAllUsersEvent()),
         child: BlocConsumer<HomeBloc, HomeState>(
           listener: (context, state) {
             // para mostrar dialogos o snackbars
@@ -39,6 +85,9 @@ class _HomePageState extends State<HomePage> {
                       Divider(),
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
+                      leading: (state.usersList[index].id % 2 == 0)
+                          ? Icon(Icons.add)
+                          : Icon(Icons.remove),
                       title: Text(state.usersList[index].name),
                       subtitle: Text(
                           'Company: ${state.usersList[index].company.name}'
@@ -50,8 +99,6 @@ class _HomePageState extends State<HomePage> {
                 ),
                 onRefresh: () async {
                   BlocProvider.of<HomeBloc>(context).add(GetAllUsersEvent());
-                  // BlocProvider.of<HomeBloc>(context)
-                  //     .add(FilterUsersEvent(filterEven: true));
                 },
               );
             } else if (state is LoadingState) {
@@ -60,7 +107,7 @@ class _HomePageState extends State<HomePage> {
             return Center(
               child: MaterialButton(
                 onPressed: () {
-                  BlocProvider.of<HomeBloc>(context).add(GetAllUsersEvent());
+                  _homeBloc.add(GetAllUsersEvent());
                 },
                 child: Text("Cargar de nuevo"),
               ),
